@@ -1,0 +1,113 @@
+---
+title: "Interactive Graph"
+author: "Daniel Farnand"
+date: "October 26, 2017"
+output: html_document
+runtime: shiny
+---
+
+In order to see this graph, it should be opened in Rstudio, and launched using the "Run Document" button.
+
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+library(shiny)
+library(scales)
+library(plotly)
+library(data.table)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+schools <- read.csv("data/School Level Data.csv")
+dists <- read.csv("data/Districts Level Data.csv")
+
+colnames(schools) <- sapply(colnames(schools), 
+                            function(x) strsplit(x, split = '..', fixed = T)[[1]][1])
+
+colnames(dists) <- sapply(colnames(dists), 
+                          function(x) strsplit(x, split = '..', fixed = T)[[1]][1])
+hs <- filter(schools, School.Level.Code == '3-High')
+hs_merged <- left_join(hs, dists,
+                       by = c("Agency.Name", "Agency.ID", "Agency.Type", "State.Name", "State.Abbr"),
+                       suffix = c('.sch','.dist'))
+
+hs_merged <-mutate_each(hs_merged, funs(. == "1-Yes"),
+                        School.wide.Title.I, Title.I.Eligible.School,
+                        Charter.School, Magnet.School)
+
+hs_merged$Urban.Cat.sch <- hs_merged$Urban.centric.Locale.sch
+levels(hs_merged$Urban.Cat.sch) <- c("City","City","City",
+                                                 "Suburb","Suburb","Suburb",
+                                                 "Town","Town","Town",
+                                                 "Rural","Rural","Rural")
+```
+
+```{r shiny}
+demog <- select(hs_merged, Urban.centric.Locale.sch, Urban.Cat.sch, Charter.School,
+                Male.Students.sch, Female.Students.sch,
+                American.Indian.Alaska.Native.Students.sch,
+                Asian.or.Asian.Pacific.Islander.Students.sch,
+                Hispanic.Students.sch,
+                Black.Students.sch,
+                White.Students.sch,
+                Hawaiian.Nat.sch,
+                Total.Students.sch,
+                Male.Students.dist, Female.Students.dist,
+                American.Indian.Alaska.Native.Students.dist,
+                Asian.or.Asian.Pacific.Islander.Students.dist,
+                Hispanic.Students.dist,
+                Black.Students.dist,
+                White.Students.dist,
+                Hawaiian.Nat.dist,
+                Total.Students.dist)
+
+demog_pcts <- transmute(hs_merged, "Urbanicity" = Urban.centric.Locale.sch, 
+                        "Urbanicity (Collapsed)" = Urban.Cat.sch,
+                        "Percent Male" = Male.Students.sch/Total.Students.sch,
+                        "Percent Female" = Female.Students.sch/Total.Students.sch,
+                        "Percent Asian" = Asian.or.Asian.Pacific.Islander.Students.sch/Total.Students.sch,
+                        "Percent Hispanic" = Hispanic.Students.sch/Total.Students.sch,
+                        "Percent Black" = Black.Students.sch/Total.Students.sch,
+                        "Percent White" = White.Students.sch/Total.Students.sch,
+                        "Percent Hawaiian Native" = Hawaiian.Nat.sch/Total.Students.sch,
+                        "Percent Native American" = American.Indian.Alaska.Native.Students.dist/Total.Students.sch)
+
+
+ui <- shinyUI(fluidPage(
+  sidebarPanel(
+    fluidRow(
+      column(10,
+             div(style = "font-size: 13px;", selectInput("rowvar", label = "Select Variable", 
+                                                         choices=colnames(demog))))
+    )
+  ),
+  tabPanel("First Page"),
+  mainPanel(tabsetPanel(id='charts',
+                        tabPanel("charts",tags$b(tags$br("Graphical Output" )),
+                                 tags$br(),plotlyOutput("plot1"))))
+))
+
+server <- shinyServer(function(input, output,session){
+  updateTabsetPanel(session = session, inputId = 'myTabs')
+
+  observe({
+    updateSelectInput(session, "rowvar",
+                      choices = colnames(demog_pcts),
+                      selected = colnames(demog_pcts)[1])
+  })
+
+  output$plot1 <- renderPlotly({
+    validate(need(input$rowvar,''))
+    
+    plot_ly(x = demog_pcts[,input$rowvar], type = "histogram")
+  })
+})
+
+shinyApp(ui = ui, server = server)
+
+
+```
+
+Looking through these histograms, we can learn a lot about the data set. We can see that Large Suburbs appear to be the most common urbanicity group, though with the collapsed categories, rural areas in general are more common (towns are the least common - which may be a result of the urban-rural divide, although this is likely not the correct dataset to analyze that). We see that with the racial variables, there tend to be many schools with very a very low percentage of that race. It is interesting that this is the case across all the races, with the exception of white students, of which there tend to be either a very low or a very high percentage of. 

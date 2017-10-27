@@ -1,0 +1,202 @@
+---
+title: "Non-Interactive Tutorial"
+author: "Daniel Farnand"
+date: "October 26, 2017"
+output: 
+  html_document:
+    df_print: paged
+---
+
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(stargazer)
+library(shiny)
+library(scales)
+library(plotly)
+library(data.table)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+schools <- read.csv("data/School Level Data.csv")
+dists <- read.csv("data/Districts Level Data.csv")
+```
+
+
+
+## Introduction
+
+This tutorial will walk you through the steps of a descriptive analysis using `dplyr` for data merge and cleaning.
+
+At the end of each page you can click "Continue" to move to the next. The code given runs automatically, so you don't have do run each block, although you can explore the code or objects in an interactive way if you like.
+
+## Looking Over at the Data
+
+Two data frames have been loaded: `schools` and `dists`, pertaining to schools and districts respectively.
+
+```{r show-data1}
+schools
+```
+
+```{r show-data2}
+dists
+```
+
+
+You probably notice a few things about the data frames. First they are both _very_ big. You can see just how big with the `dim` function.
+
+```{r data-dim-hint}
+dim(schools)
+dim(dists)
+```
+
+## Renaming the Columns
+
+Another thing you may have notices is that most of the column names are long and hard to read.
+
+```{r head-names}
+head(colnames(schools),10)
+```
+
+Retyping them all would take a long time. A quicker way is to cut the names off at the first instance of multiple periods (`..`). Often times this sort of text parsing will require [regular expressions](http://www.rexegg.com), but here we have an even simpler option using the `strsplit` function built into R. This function breaks one character string up into separate strings, around a specific character.
+
+```{r strsplit-practice}
+strsplit("Once upon a midnight dreary", split='n')
+```
+
+In order to apply this to the entire vector we can use the `sapply` with an anonymous function that runs `strsplit` and subsets the first string (everything before the first `..`).
+
+```{r modify-names}
+colnames(schools) <- sapply(colnames(schools), 
+                            function(x) strsplit(x, split = '..', fixed = T)[[1]][1])
+
+colnames(dists) <- sapply(colnames(dists), 
+                          function(x) strsplit(x, split = '..', fixed = T)[[1]][1])
+
+head(colnames(schools),10)
+```
+
+The `fixed=T` argument was necessary because otherwise the periods would be interpreted as regular expressions, giving strange results:
+
+```{r check-fixed-argument}
+strsplit("Generic..Column.Name", split = '..')
+
+strsplit("Generic..Column.Name", split = '..', fixed = T)
+```
+
+## Subsetting
+
+Depending on the work you want to do, its likely that you only need specific subset of the data. Here we will pull out High Schools specifically, and use only them going forward.
+
+The `dplyr` package provides simple and very readable functions for subsetting and cleaning data, which will be very useful in this tutorial. We should start by loading the package
+
+```{r load-dplyr, eval=F}
+library(dplyr)
+```
+
+A subset is then saved as a separate variable with the `filter` function. The second argument is the condition we want to filter the schools by, here those that have the value of "3-High" in the `School.Level.Code` variable.
+
+```{r subset-hs}
+hs <- filter(schools, School.Level.Code == '3-High')
+
+dim(schools)
+dim(hs)
+```
+
+This has significantly decreased the size of the data we're working with.
+
+
+## Merging
+
+Because we also may want to know information about the school district that each school is in, we must merge the two data frames. Dplyr also provides [convenient merging functions](https://www.rdocumentation.org/packages/dplyr/versions/0.7.3/topics/join). 
+
+We have to decide which variables we will use to link the different records - in this case we are lucky in that the agency ID and names are given in the school data, as well as information about the state the school or district is in, which should also match between the two sets.
+
+We will use the `left_join` function, as we want to find one row from the Districts data to match each row from the Schools. Therefore schools, listed first and therefore on the "left" side is the basis of the merger. As some variable names will be common between the two sets, we can use the `suffic` argument to append ".sch" or ".dist" to school or district variables, respectively.
+
+```{r merge}
+hs_merged <- left_join(hs, dists,
+                       by = c("Agency.Name", "Agency.ID", "Agency.Type", "State.Name", "State.Abbr"),
+                       suffix = c('.sch','.dist'))
+
+dim(hs)
+dim(hs_merged)
+```
+
+## Recoding
+
+### Binary Variables
+
+Part of the data cleaning process involves recoding data into a more useful form. One of the simple things we can do is make variables with only two options into T/F. We can easily apply this conversion to multiple variables using Dplyr's `mutate_each` function. The second argument, `funs(. == "1-Yes")`, takes each variable and evaluates it as equal to the value "1-Yes", making it into a T/F logical variable.
+
+```{r tf-recode, warning=FALSE}
+hs_merged <-mutate_each(hs_merged, funs(. == "1-Yes"),
+                        School.wide.Title.I, Title.I.Eligible.School,
+                        Charter.School, Magnet.School)
+```
+
+### Urbanicity
+
+Looking at the Urbanicity variable, its categories may be too granular for certain purposes.
+
+```{r urb-levels}
+levels(hs_merged$Urban.centric.Locale.sch)
+```
+
+We can also create an alternate version that combines the categories into four based on the overall urban category: City, Suburb, Town, and Rural.
+
+```{r urb-recode}
+hs_merged$Urban.Cat.sch <- hs_merged$Urban.centric.Locale.sch
+levels(hs_merged$Urban.Cat.sch) <- c("City","City","City",
+                                                 "Suburb","Suburb","Suburb",
+                                                 "Town","Town","Town",
+                                                 "Rural","Rural","Rural")
+
+select(hs_merged, 
+       School.wide.Title.I, Title.I.Eligible.School,
+       Charter.School, Magnet.School, 
+       Urban.centric.Locale.sch, Urban.Cat.sch)
+```
+
+Using Dplyr's `select` function to look at only the variables of interest, we can review our newly recoded columns.
+
+## Summary Statistics
+
+Summaries of variables can be useful in understanding their distributions. The `stargazer` package provides a summary statistics in an attractive format.
+
+```{r stargazer, eval=FALSE}
+library(stargazer)
+```
+
+We will select a set of variables to examine
+
+<style>
+
+table, td, th {
+  border: none;
+  padding-left: 1em;
+  padding-right: 1em;
+  min-width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 1em;
+  margin-bottom: 1em;
+}
+
+</style>
+
+```{r summary-stats, results='asis'}
+stargazer(select(hs_merged, Male.Students.sch, Female.Students.sch,
+                 American.Indian.Alaska.Native.Students.sch,
+                 Asian.or.Asian.Pacific.Islander.Students.sch,
+                 Hispanic.Students.sch, Black.Students.sch,
+                 White.Students.sch, Hawaiian.Nat.sch, Total.Students.sch), 
+          type='html', digits=2, nobs=F, median=F)
+```
+
+This is a simple table, giving the mean, median, minimum and maximum values of the variables, as well as the standard deviation. We Can see from this data that on average there is a low number of Native American, Hawaiian, and Asian Students, more commonly Black or Hispanic, and on average the highest number of White Students in each school, however by the standard deviations we can also see that these numbers have great variance in different schools.
+
+## Graph
+
+Please launch the `ShinyPlot.Rmd` file in Rstudio and compile it with the "Run Document" button.
