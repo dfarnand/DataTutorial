@@ -52,7 +52,7 @@ dim(dists)
 
 ## Renaming the Columns
 
-Another thing you may have notices is that most of the column names are long and hard to read.
+Another thing you may have noticed is that most of the column names are long and hard to read.
 
 ```{r head-names, exercise=TRUE, exercise.eval=TRUE, exercise.lines = 1}
 head(colnames(schools),10)
@@ -128,7 +128,7 @@ Because we also may want to know information about the school district that each
 
 We have to decide which variables we will use to link the different records - in this case we are lucky in that the agency ID and names are given in the school data, as well as information about the state the school or district is in, which should also match between the two sets.
 
-We will use the `left_join` function, as we want to find one row from the Districts data to match each row from the Schools. Therefore schools, listed first and therefore on the "left" side is the basis of the merger. As some variable names will be common between the two sets, we can use the `suffic` argument to append ".sch" or ".dist" to school or district variables, respectively.
+We will use the `left_join` function, as we want to find one row from the Districts data to match each row from the Schools. Therefore schools, listed first and therefore on the "left" side is the basis of the merger. As some variable names will be common between the two sets, we can use the `suffix` argument to append ".sch" or ".dist" to school or district variables, respectively.
 
 ```{r merge, warning=FALSE, exercise=TRUE, exercise.eval=TRUE, exercise.lines=6, exercise.setup="setup3"}
 hs_merged <- left_join(hs, dists,
@@ -155,7 +155,7 @@ hs_merged <- left_join(hs, dists,
 
 ### Binary Variables
 
-Part of the data cleaning process involves recoding data into a more useful form. One of the simple things we can do is make variables with only two options into T/F. We can easily apply this conversion to multiple variables using Dplyr's `mutate_each` function. The second argument, `funs(. == "1-Yes")`, takes each variable and evaluates it as equal to the value "1-Yes", making it into a T/F logical variable.
+Part of the data cleaning process involves recoding data into a more useful form. One of the simple things we can do is make variables with only two options into the form of True or False. We can easily apply this conversion to multiple variables using Dplyr's `mutate_each` function. The second argument, `funs(. == "1-Yes")`, takes each variable and evaluates it as equal to the value "1-Yes", making it into a T/F logical variable.
 
 ```{r tf-recode, warning=FALSE, exercise=TRUE, exercise.eval=TRUE, exercise.lines=6, exercise.setup="setup4"}
 hs_merged <-mutate_each(hs_merged, funs(. == "1-Yes"),

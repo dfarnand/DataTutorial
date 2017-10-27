@@ -11,7 +11,8 @@ Hash: 95f62be4d6916aae14a310a8b56a6475
 Package: DT
 Source: CRAN
 Version: 0.2
-Requires: magrittr, htmltools, htmlwidgets
+Hash: 36b032203797956fedad5a25055016a9
+Requires: htmltools, htmlwidgets, magrittr
 
 Package: R6
 Source: CRAN
@@ -36,6 +37,7 @@ Hash: e8805df54c65ac96d50235c44a82615c
 Package: backports
 Source: CRAN
 Version: 1.1.1
+Hash: add136c9d4540b96290e9cc438763da7
 
 Package: base64enc
 Source: CRAN
@@ -56,10 +58,12 @@ Requires: Rcpp, bindr, plogr
 Package: bitops
 Source: CRAN
 Version: 1.0-6
+Hash: 67d0775189fd0041d95abca618c5c07e
 
 Package: caTools
 Source: CRAN
 Version: 1.17.1
+Hash: 97cb6f6293cd18d17df77a6383cc6763
 Requires: bitops
 
 Package: colorspace
@@ -106,6 +110,11 @@ Version: 0.10.1
 Hash: 54d95f4ec6d0300100413ed0127d89ae
 Requires: stringr
 
+Package: formatR
+Source: CRAN
+Version: 1.5
+Hash: 258cf79a8dbeedf1c981cdb53837d2af
+
 Package: ggplot2
 Source: CRAN
 Version: 2.2.1
@@ -142,7 +151,7 @@ Package: htmlwidgets
 Source: CRAN
 Version: 0.9
 Hash: 7514f6ea9f3bef6d9b6c945095275302
-Requires: jsonlite, yaml, htmltools
+Requires: htmltools, jsonlite, yaml
 
 Package: httpuv
 Source: CRAN
@@ -165,7 +174,7 @@ Package: knitr
 Source: CRAN
 Version: 1.17
 Hash: f6b2bf543ee3e25f5b92bb46f9958c5f
-Requires: digest, highr, yaml, markdown, stringr, evaluate
+Requires: digest, evaluate, highr, markdown, stringr, yaml
 
 Package: labeling
 Source: CRAN
@@ -180,8 +189,9 @@ Hash: 3d6e7608e65bbf5cb170dab1e3c9ed8b
 Package: learnr
 Source: CRAN
 Version: 0.9
-Requires: jsonlite, rappdirs, withr, rprojroot, htmltools, markdown,
-    htmlwidgets, shiny, evaluate, knitr, rmarkdown
+Hash: 18bf32d655d13cdcf42c17e77a3c8228
+Requires: evaluate, htmltools, htmlwidgets, jsonlite, knitr, markdown,
+    rappdirs, rmarkdown, rprojroot, shiny, withr
 
 Package: magrittr
 Source: CRAN
@@ -248,6 +258,7 @@ Requires: magrittr, rlang, tibble
 Package: rappdirs
 Source: CRAN
 Version: 0.3.1
+Hash: 7340cfebc77ad7b107a549a8635e64dd
 
 Package: reshape2
 Source: CRAN
@@ -263,12 +274,14 @@ Hash: c17b638e3282aa222a47112d7a60bc66
 Package: rmarkdown
 Source: CRAN
 Version: 1.6
-Requires: base64enc, jsonlite, yaml, rprojroot, caTools, htmltools,
-    stringr, evaluate, knitr
+Hash: 40f4034a7b8e28edc2b384bdb0c4d537
+Requires: base64enc, caTools, evaluate, htmltools, jsonlite, knitr,
+    rprojroot, stringr, yaml
 
 Package: rprojroot
 Source: CRAN
 Version: 1.2
+Hash: fdcac51a7f47decd60556ceefc3c26b1
 Requires: backports
 
 Package: scales
@@ -282,8 +295,8 @@ Package: shiny
 Source: CRAN
 Version: 1.0.5
 Hash: 4d47532a807122bfd6bc3818310f9d2e
-Requires: R6, digest, jsonlite, mime, sourcetools, xtable, httpuv,
-    htmltools
+Requires: R6, digest, htmltools, httpuv, jsonlite, mime, sourcetools,
+    xtable
 
 Package: sourcetools
 Source: CRAN
@@ -333,6 +346,7 @@ Hash: 10f0c25af3dc84eaae10f5854f47efdb
 Package: withr
 Source: CRAN
 Version: 2.0.0
+Hash: cc7e555b8e249aa5cf391592fcae71a2
 
 Package: xtable
 Source: CRAN
