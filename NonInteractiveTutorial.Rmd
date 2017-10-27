@@ -199,4 +199,25 @@ This is a simple table, giving the mean, median, minimum and maximum values of t
 
 ## Graph
 
-Please launch the `ShinyPlot.Rmd` file in Rstudio and compile it with the "Run Document" button.
+**Please launch the `ShinyPlot.Rmd` file in Rstudio and compile it with the "Run Document" button.**
+
+However, here are some histograms that represent what can be seen in the interactive one:
+
+```{r, echo=F}
+barplot(table(hs_merged$Urban.centric.Locale.sch),  xlab="Urbanicity")
+barplot(table(hs_merged$Urban.Cat.sch), xlab="Urbanicity (collapsed)")
+
+hist(hs_merged$Asian.or.Asian.Pacific.Islander.Students.sch/hs_merged$Total.Students.sch,
+     xlab = "Percent Asian")
+
+hist(hs_merged$Hispanic.Students.sch/hs_merged$Total.Students.sch,
+     xlab = "Percent Hispanic")
+
+hist(hs_merged$Black.Students.sch/hs_merged$Total.Students.sch,
+     xlab = "Percent Black")
+
+hist(hs_merged$White.Students.sch/hs_merged$Total.Students.sch,
+     xlab = "Percent White")
+```
+
+Looking through these histograms, we can learn a lot about the data set. We can see that Large Suburbs appear to be the most common urbanicity group, though with the collapsed categories, rural areas in general are more common (towns are the least common - which may be a result of the urban-rural divide, although this is likely not the correct dataset to analyze that). We see that with the racial variables, there tend to be many schools with very a very low percentage of that race. It is interesting that this is the case across all the races, with the exception of white students, of which there tend to be either a very low or a very high percentage of. 
